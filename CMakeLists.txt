@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(UserAuditSystem)
+set(CMAKE_CXX_STANDARD 17)
+add_executable(UserAuditSystem src/main.cpp)
+add_executable(test_mysql src/test_mysql.cpp)
+target_link_libraries(test_mysql mysqlclient)
