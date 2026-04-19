@@ -1,0 +1,11 @@
+/bin/
+/build/
+out.txt
+*.o
+*.d
+*.out
+*.log
+*.swp
+*.swo
+.vscode/
+myshell/myshell

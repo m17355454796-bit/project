@@ -1,4 +1,0 @@
-/home/daixusheng/project/user_audit_system/bin/CMakeFiles/UserAuditSystem.dir
-/home/daixusheng/project/user_audit_system/bin/CMakeFiles/test_mysql.dir
-/home/daixusheng/project/user_audit_system/bin/CMakeFiles/edit_cache.dir
-/home/daixusheng/project/user_audit_system/bin/CMakeFiles/rebuild_cache.dir
