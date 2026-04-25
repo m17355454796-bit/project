@@ -1,70 +1,127 @@
 #include<stdio.h>
 #include<unistd.h>
 #include<pthread.h>
+#include<stdlib.h>
 #define QUEUE_CAPACITY 5
-int queue[QUEUE_CAPACITY];
+#define TOTAL_TASK 30
+typedef struct Task{
+    void(*function)(void*arg);
+    void*arg;
+}Task;
+int produced_count=0;
+int consumed_count=0;
+Task queue[QUEUE_CAPACITY];
 int size=0;
 int head=0;
 int tail=0;
+int shutdown=0;
 pthread_mutex_t mutex=PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t not_empty=PTHREAD_COND_INITIALIZER;
 pthread_cond_t not_full=PTHREAD_COND_INITIALIZER;
-void push(int data)
+void push(Task task)
 {
-    queue[tail]=data;
+    queue[tail]=task;
     tail=(tail+1)%QUEUE_CAPACITY;
     size++;
 }
-int pop()
+Task pop()
 {
-    int data=queue[head];
+    Task task=queue[head];
     head=(head+1)%QUEUE_CAPACITY;
     size--;
-    return data;
+    return task;
 }
-void* consumer(void*arg)
+void add_task(void(*function)(void*),void*arg)
+{
+    pthread_mutex_lock(&mutex);
+    while(size==QUEUE_CAPACITY)
+    {
+      printf("队列满了，生产者等待\n");
+      pthread_cond_wait(&not_full,&mutex);
+    }
+    Task task;
+    task.function=function;
+    task.arg=arg;
+    push(task);
+    pthread_cond_signal(&not_empty);
+    pthread_mutex_unlock(&mutex);
+}
+void print_task(void*arg)
+{
+    int num=*(int*)arg;
+    printf("线程正在执行任务%d\n",num);
+    free(arg);
+}
+void* worker(void*arg)
 {
     
-    for(int i=0;i<20;i++)
-    { 
+    while(1)
+    {
         pthread_mutex_lock(&mutex);
-        while(size==0)
+         while(size==0&&shutdown==0)
         {
             printf("条件为空，消费者等待\n");
             pthread_cond_wait(&not_empty,&mutex);
+            printf("消费者被唤醒，并且重新拿到 mutex\n");
         }
-        int data=pop();
-        printf("消费者消费了一个数据:%d,size=%d\n",data,size);
+        if(size==0&&shutdown==1)
+        {
+            pthread_mutex_unlock(&mutex);
+            printf("所有任务已经完成！\n");
+            break;
+        }
+        Task task=pop();
+        consumed_count++;
+        printf("消费者取出了一个任务,size=%d\n",size);
         pthread_cond_signal(&not_full);
         pthread_mutex_unlock(&mutex);
+        task.function(task.arg);
         sleep(1);
     }
     return NULL;
 }
 void* producer(void*arg)
 {
-    for(int i=1;i<=20;i++)
+    while (1)
     {
         pthread_mutex_lock(&mutex);
-         while(size==QUEUE_CAPACITY)
+         if(produced_count>=TOTAL_TASK)
         {
-            printf("队列满了，生产者等待\n");
-            pthread_cond_wait(&not_full,&mutex);
+            pthread_cond_broadcast(&not_empty);
+            pthread_mutex_unlock(&mutex);
+            break;
         }
-        push(i*10);
-        printf("生产者生产一个数据:%d size=%d\n",i*10,size);
-        pthread_cond_signal(&not_empty);
+        produced_count++;
+        int*num=malloc(sizeof(int));
+        *num=produced_count;
         pthread_mutex_unlock(&mutex);
-    }
+        add_task(print_task,num);
+    }    
     return NULL;
 }
 int main()
 {
-    pthread_t c;
-    pthread_t p;
-    pthread_create(&c,NULL,consumer,NULL);
-    pthread_create(&p,NULL,producer,NULL);
-    pthread_join(p,NULL);
-    pthread_join(c,NULL);
+    pthread_t workers[3];
+    for(int i=0;i<3;i++)
+    {
+        pthread_create(&workers[i],NULL,worker,NULL);
+    }
+    for(int i = 1; i <= TOTAL_TASK; i++)
+    {
+        int* num = malloc(sizeof(int));
+        *num = i;
+        add_task(print_task, num);
+    }
+    pthread_mutex_lock(&mutex);
+        shutdown=1;
+        pthread_cond_broadcast(&not_empty);
+        pthread_mutex_unlock(&mutex);
+    for(int i=0;i<3;i++)
+    {
+        pthread_join(workers[i],NULL);
+    }
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&not_empty);
+    pthread_cond_destroy(&not_full);
     return 0;
 }
