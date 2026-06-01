@@ -9,3 +9,10 @@ out.txt
 *.swo
 .vscode/
 myshell/myshell
+echoserver/UdpEchoClient
+echoserver/UdpEchoServer
+bin/
+mystdio/main
+pthread_cond/main
+pthread_cond/pc
+threadpool/threadpool

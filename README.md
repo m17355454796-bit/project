@@ -1,123 +1,40 @@
-# 用户审计系统 (User Audit System)
+# project
 
-这是一个基于 C++ 和 MySQL 的用户审计系统，用于管理用户账户并记录用户操作日志。
+这个仓库是 Linux/C/C++ 学习项目集合，包含用户审计系统、简易 Shell、模拟 stdio、条件变量/线程池练习和 UDP Echo 示例。
 
-## 项目结构
+## 目录内容
 
-- `src/`: 源代码文件
-  - `main.cpp`: 主程序入口
-  - `test_mysql.cpp`: MySQL 连接测试程序
-- `sql/`: 数据库初始化脚本
-  - `init.sql`: 创建数据库和表的 SQL 脚本
-- `bin/`: 编译后的可执行文件
-- `config/`: 配置文件
-- `headFile/`: 头文件
-- `myLog/`: 日志文件
-- `temFile/`: 临时文件
+| 目录 | 内容 | 说明 |
+| --- | --- | --- |
+| `src/` | 用户审计系统 C++ 源码 | `main.cpp` 是主程序入口，`test_mysql.cpp` 是 MySQL 查询测试程序 |
+| `sql/` | 数据库脚本 | `init.sql` 创建 `user_audit_system` 数据库表 |
+| `myshell/` | 简易 Shell | 支持命令执行、`cd`、`echo $?`、`env` 和基础重定向 |
+| `mystdio/` | 模拟 stdio | 用 `open/write/close` 实现简单文件写入缓冲 |
+| `pthread_cond/` | 条件变量练习 | 从生产者消费者模型扩展到简单任务队列 |
+| `threadpool/` | C++ 线程池 | 基于 `pthread`、任务队列和条件变量实现 |
+| `echoserver/` | UDP Echo | 包含 UDP 服务端和客户端 |
 
-## 数据库结构
+## 构建说明
 
-- **users 表**: 存储用户信息
-  - id: 用户ID (主键，自增)
-  - username: 用户名 (唯一)
-  - password: 密码
-  - role: 角色 (默认 'user')
-  - created_at: 创建时间
+用户审计系统使用根目录 `CMakeLists.txt`：
 
-- **logs 表**: 存储操作日志
-  - id: 日志ID (主键，自增)
-  - username: 操作用户名
-  - action: 操作类型
-  - detail: 操作详情
-  - created_at: 操作时间
+```bash
+mkdir -p build
+cd build
+cmake ..
+make
+```
 
-## 构建和运行
+其他小项目一般进入对应目录后执行：
 
-### 依赖项
+```bash
+make
+```
 
-- CMake
-- MySQL 开发库 (libmysqlclient-dev)
-- C++ 编译器 (g++)
+生成的可执行文件、构建目录、日志和本地编辑器配置已加入 `.gitignore`，不建议提交到 GitHub。
 
-### 构建步骤
+## 当前整理原则
 
-1. 安装依赖：
-   ```bash
-   sudo apt update
-   sudo apt install cmake libmysqlclient-dev g++
-   ```
-
-2. 克隆或进入项目目录：
-   ```bash
-   cd /path/to/user_audit_system
-   ```
-
-3. 创建构建目录并编译：
-   ```bash
-   mkdir build
-   cd build
-   cmake ..
-   make
-   ```
-
-4. 可执行文件将在 `bin/` 目录下生成：
-   - `UserAuditSystem`: 主程序
-   - `test_mysql`: MySQL 测试程序
-
-### 数据库设置
-
-1. 安装并启动 MySQL 服务：
-   ```bash
-   sudo apt install mysql-server
-   sudo systemctl start mysql
-   ```
-
-2. 创建数据库用户和数据库：
-   ```bash
-   mysql -u root -p
-   CREATE USER 'Daixusheng'@'localhost' IDENTIFIED BY '123456';
-   CREATE DATABASE user_audit_system;
-   GRANT ALL PRIVILEGES ON user_audit_system.* TO 'Daixusheng'@'localhost';
-   FLUSH PRIVILEGES;
-   EXIT;
-   ```
-
-3. 初始化数据库：
-   ```bash
-   mysql -u Daixusheng -p user_audit_system < sql/init.sql
-   ```
-
-### 运行程序
-
-1. 运行主程序：
-   ```bash
-   cd bin
-   ./UserAuditSystem
-   ```
-
-2. 运行 MySQL 测试：
-   ```bash
-   ./test_mysql
-   ```
-   然后输入用户名进行查询。
-
-## 功能特性
-
-- 用户管理：添加、查询用户
-- 操作日志记录：记录用户登录、查询、更新等操作
-- MySQL 数据库集成
-- 简单的命令行界面
-
-## 注意事项
-
-- 密码存储为明文，生产环境建议使用哈希加密
-- SQL 查询存在注入风险，建议使用预处理语句
-- 确保 MySQL 服务运行并配置正确
-
-## 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 许可证
-
-MIT License
+- 保留源码、SQL、Makefile、CMakeLists 和说明文档。
+- 删除可重新生成的二进制文件。
+- 每个小项目目录都补充独立 `README.md`，方便以后单独查看。
