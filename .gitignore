@@ -16,3 +16,5 @@ mystdio/main
 pthread_cond/main
 pthread_cond/pc
 threadpool/threadpool
+dictserver/UdpDictServer
+dictserver/UdpDictClient
